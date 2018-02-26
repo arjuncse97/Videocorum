@@ -33,11 +33,11 @@ class GTK_Main(object):
 
         hbox = Gtk.HBox()
         vbox.pack_start(hbox, False, False, 0)
-        self.entry = Gtk.Entry()
-        hbox.add(self.entry)
-        self.button = Gtk.Button("Start")
-        hbox.pack_start(self.button, False, False, 0)
-        self.button.connect("clicked", self.start_stop)
+        #self.entry = Gtk.Entry()
+        #hbox.add(self.entry)
+        #self.button = Gtk.Button("Start")
+        #hbox.pack_start(self.button, False, False, 0)
+        #self.button.connect("clicked", self.start_stop)
         self.movie_window = Gtk.DrawingArea()
         vbox.add(self.movie_window)
         window.show_all()
@@ -49,6 +49,24 @@ class GTK_Main(object):
         bus.connect("message", self.on_message)
         bus.connect("sync-message::element", self.on_sync_message)
 
+
+    def open_file(self, widget, string):
+        dialog = Gtk.FileChooserDialog("Open", None,
+                Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+
+        dialog.set_default_response(Gtk.ResponseType.OK)
+
+        fil = Gtk.FileFilter()
+        fil.set_name("mp4")
+        fil.add_pattern("*.mp4")
+        dialog.add_filter(fil)
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            print(dialog.get_filename())
+            self.player.set_property("uri", "file://" + dialog.get_filename())
+            self.player.set_state(Gst.State.PLAYING)
+        dialog.destroy()
+
     def menuitem_response(self, widget, string):
         print "%s" % string
     
@@ -57,7 +75,7 @@ class GTK_Main(object):
         menu_items = Gtk.MenuItem("Open..")
         menu.append(menu_items)
 
-        menu_items.connect("activate", self.menuitem_response, "Open..")
+        menu_items.connect("activate", self.open_file, "Open..")
 
         menu_items.show()
         root_menu = Gtk.MenuItem("File")
