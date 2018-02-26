@@ -26,8 +26,10 @@ class GTK_Main(object):
         vbox.pack_start(hbox, False, False, 0)
         menu_bar.show()
         
-        menu_bar.append(self.generate_dummy_list_items("Root menu"))
-        menu_bar.append(self.generate_dummy_list_items("adfl"))
+        menu_bar.append(self.file_submenu())
+        menu_bar.append(self.generate_dummy_list_items("Subtitles"))
+        menu_bar.append(self.generate_dummy_list_items("Settings"))
+        menu_bar.append(self.generate_dummy_list_items("Help"))
 
         hbox = Gtk.HBox()
         vbox.pack_start(hbox, False, False, 0)
@@ -49,6 +51,19 @@ class GTK_Main(object):
 
     def menuitem_response(self, widget, string):
         print "%s" % string
+    
+    def file_submenu(self):
+        menu = Gtk.Menu()
+        menu_items = Gtk.MenuItem("Open..")
+        menu.append(menu_items)
+
+        menu_items.connect("activate", self.menuitem_response, "Open..")
+
+        menu_items.show()
+        root_menu = Gtk.MenuItem("File")
+        root_menu.show()
+        root_menu.set_submenu(menu)
+        return root_menu
     
     def generate_dummy_list_items(self, name):
         menu = Gtk.Menu()
