@@ -6,8 +6,6 @@ from gi.repository import Gst, GObject, Gtk
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
 from gi.repository import GdkX11, GstVideo
 
-def menuitem_response(self, widget, string):
-    print "%s" % string
 
 
 class GTK_Main(object):
