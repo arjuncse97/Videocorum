@@ -6,6 +6,10 @@ from gi.repository import Gst, GObject, Gtk
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
 from gi.repository import GdkX11, GstVideo
 
+def menuitem_response(self, widget, string):
+    print "%s" % string
+
+
 class GTK_Main(object):
       
     def __init__(self):
@@ -14,27 +18,6 @@ class GTK_Main(object):
         window.set_default_size(500, 400)
         window.connect("destroy", Gtk.main_quit, "WM destroy")
         
-        
-        menu = Gtk.Menu()
-        for i in range(3):
-            # Copy the names to the buf.
-            buf = "Test-undermenu - %d" % i
-
-            # Create a new menu-item with a name...
-            menu_items = Gtk.MenuItem(buf)
-
-            # ...and add it to the menu.
-            menu.append(menu_items)
-
-	    # Do something interesting when the menuitem is selected
-	    menu_items.connect("activate", self.menuitem_response, buf)
-
-            # Show the widget
-            menu_items.show()
-        root_menu = Gtk.MenuItem("Root Menu")
-
-        root_menu.show()
-        root_menu.set_submenu(menu)
 
         vbox = Gtk.VBox(False, 0)
         window.add(vbox)
@@ -45,7 +28,8 @@ class GTK_Main(object):
         vbox.pack_start(hbox, False, False, 0)
         menu_bar.show()
         
-        menu_bar.append(root_menu)
+        menu_bar.append(self.generate_dummy_list_items("Root menu"))
+        menu_bar.append(self.generate_dummy_list_items("adfl"))
 
         hbox = Gtk.HBox()
         vbox.pack_start(hbox, False, False, 0)
@@ -67,6 +51,29 @@ class GTK_Main(object):
 
     def menuitem_response(self, widget, string):
         print "%s" % string
+    
+    def generate_dummy_list_items(self, name):
+        menu = Gtk.Menu()
+        for i in range(3):
+            # Copy the names to the buf.
+            buf = "Test-undermenu - %d" % i
+
+            # Create a new menu-item with a name...
+            menu_items = Gtk.MenuItem(buf)
+
+            # ...and add it to the menu.
+            menu.append(menu_items)
+
+            # Do something interesting when the menuitem is selected
+            menu_items.connect("activate", self.menuitem_response, buf)
+
+            # Show the widget
+            menu_items.show()
+        root_menu = Gtk.MenuItem(name)
+        root_menu.show()
+        root_menu.set_submenu(menu)
+        return root_menu
+
 
 
     def start_stop(self, w):
