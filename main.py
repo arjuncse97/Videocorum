@@ -78,6 +78,7 @@ class GTK_Main(object):
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             print(dialog.get_filename())
+            self.player.set_state(Gst.State.NULL)
             self.player.set_property("uri", "file://" + dialog.get_filename())
             self.player.set_state(Gst.State.PLAYING)
         dialog.destroy()
