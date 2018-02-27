@@ -42,12 +42,16 @@ class GTK_Main(object):
         vbox.add(self.movie_window)
         
         hbox = Gtk.HBox()
-        button = Gtk.Button(stock=Gtk.STOCK_MEDIA_PAUSE)
+        button_start = Gtk.Button(stock=Gtk.STOCK_MEDIA_PAUSE)
+        hbox.add(button_start)
+        button_start.connect("clicked", self.action_pause)
+        button_start.show()
+        button = Gtk.Button(stock=Gtk.STOCK_MEDIA_STOP)
         hbox.add(button)
-        button.connect("clicked", self.action_pause)
+        button.connect("clicked", self.action_stop, button_start)
         button.show()
         vbox.pack_start(hbox, False, False, 0)
-        
+         
         window.show_all()
         
         self.player = Gst.ElementFactory.make("playbin", "player")
@@ -58,6 +62,12 @@ class GTK_Main(object):
         bus.connect("sync-message::element", self.on_sync_message)
 
 
+    def action_stop(self, widget, button_start):
+        self.player.set_state(Gst.State.NULL)
+        self.player.set_state(Gst.State.PLAYING)
+        self.player.set_state(Gst.State.PAUSED)
+        button_start.set_label(Gtk.STOCK_MEDIA_PLAY)
+
     def action_pause(self, widget):
         if ("pause" in widget.get_label()):
             self.player.set_state(Gst.State.PAUSED)
@@ -65,6 +75,7 @@ class GTK_Main(object):
         else:
             self.player.set_state(Gst.State.PLAYING)
             widget.set_label(Gtk.STOCK_MEDIA_PAUSE)
+
     def open_file(self, widget, string):
         dialog = Gtk.FileChooserDialog("Open", None,
                 Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
