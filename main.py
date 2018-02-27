@@ -12,7 +12,7 @@ class GTK_Main(object):
       
     def __init__(self):
         window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-        window.set_title("Videocorm")
+        window.set_title("Videocorum")
         window.set_default_size(500, 400)
         window.connect("destroy", Gtk.main_quit, "WM destroy")
         
@@ -40,6 +40,14 @@ class GTK_Main(object):
         #self.button.connect("clicked", self.start_stop)
         self.movie_window = Gtk.DrawingArea()
         vbox.add(self.movie_window)
+        
+        hbox = Gtk.HBox()
+        button = Gtk.Button(stock=Gtk.STOCK_MEDIA_PAUSE)
+        hbox.add(button)
+        button.connect("clicked", self.action_pause)
+        button.show()
+        vbox.pack_start(hbox, False, False, 0)
+        
         window.show_all()
         
         self.player = Gst.ElementFactory.make("playbin", "player")
@@ -50,6 +58,13 @@ class GTK_Main(object):
         bus.connect("sync-message::element", self.on_sync_message)
 
 
+    def action_pause(self, widget):
+        if ("pause" in widget.get_label()):
+            self.player.set_state(Gst.State.PAUSED)
+            widget.set_label(Gtk.STOCK_MEDIA_PLAY)
+        else:
+            self.player.set_state(Gst.State.PLAYING)
+            widget.set_label(Gtk.STOCK_MEDIA_PAUSE)
     def open_file(self, widget, string):
         dialog = Gtk.FileChooserDialog("Open", None,
                 Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
