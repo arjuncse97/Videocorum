@@ -31,8 +31,8 @@ class GTK_Main(object):
         menu_bar.append(self.generate_dummy_list_items("Settings"))
         menu_bar.append(self.generate_dummy_list_items("Help"))
 
-        hbox = Gtk.HBox()
-        vbox.pack_start(hbox, False, False, 0)
+        #hbox = Gtk.HBox()
+        #vbox.pack_start(hbox, False, False, 0)
         #self.entry = Gtk.Entry()
         #hbox.add(self.entry)
         #self.button = Gtk.Button("Start")
@@ -150,12 +150,10 @@ class GTK_Main(object):
         t = message.type
         if t == Gst.MessageType.EOS:
             self.player.set_state(Gst.State.NULL)
-            self.button.set_label("Start")
         elif t == Gst.MessageType.ERROR:
             self.player.set_state(Gst.State.NULL)
             err, debug = message.parse_error()
             #print "Error: %s" % err, debug
-            self.button.set_label("Start")
             
     def on_sync_message(self, bus, message):
         if message.get_structure().get_name() == 'prepare-window-handle':
@@ -165,6 +163,6 @@ class GTK_Main(object):
 
 
 GObject.threads_init()
-Gst.init(None)        
+Gst.init(None)
 GTK_Main()
 Gtk.main()
