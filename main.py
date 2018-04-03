@@ -5,7 +5,7 @@ from gi.repository import Gst, GObject, Gtk
 
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
 from gi.repository import GdkX11, GstVideo
-
+import ctypes
 
 
 class GTK_Main(object):
@@ -55,7 +55,9 @@ class GTK_Main(object):
         window.show_all()
         
         self.player = Gst.ElementFactory.make("playbin", "player")
-        bus = self.player.get_bus()
+        print(type(self.player))
+	print(self.player)
+	bus = self.player.get_bus()
         bus.add_signal_watch()
         bus.enable_sync_message_emission()
         bus.connect("message", self.on_message)
@@ -88,9 +90,10 @@ class GTK_Main(object):
         dialog.add_filter(fil)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            print(dialog.get_filename())
+            name = "file:///" + dialog.get_filename()
+            print(name)
             self.player.set_state(Gst.State.NULL)
-            self.player.set_property("uri", "file://" + dialog.get_filename())
+            self.player.set_property("uri", (name))
             self.player.set_state(Gst.State.PLAYING)
         dialog.destroy()
 
@@ -153,13 +156,25 @@ class GTK_Main(object):
         elif t == Gst.MessageType.ERROR:
             self.player.set_state(Gst.State.NULL)
             err, debug = message.parse_error()
-            #print "Error: %s" % err, debug
+            print "Error: %s" % err, debug
+            self.button.set_label("Start")
             
     def on_sync_message(self, bus, message):
         if message.get_structure().get_name() == 'prepare-window-handle':
             imagesink = message.src
             imagesink.set_property("force-aspect-ratio", True)
-            imagesink.set_window_handle(self.movie_window.get_property('window').get_xid())
+            video_window = self.movie_window.get_property('window')
+            if sys.platform == "win32":
+                if not video_window.ensure_native():
+                    print("Error - video playback requires a native window")
+                ctypes.pythonapi.PyCapsule_GetPointer.restype = ctypes.c_void_p
+                ctypes.pythonapi.PyCapsule_GetPointer.argtypes = [ctypes.py_object]
+                drawingarea_gpointer = ctypes.pythonapi.PyCapsule_GetPointer(video_window.__gpointer__, None)
+                gdkdll = ctypes.CDLL ("libgdk-3-0.dll")
+                imagesink.set_window_handle(gdkdll.gdk_win32_window_get_handle(drawingarea_gpointer))
+            else:
+                imagesink.set_window_handle(video_window.get_xid())
+            #imagesink.set_window_handle(self.movie_window.get_property('window').get_xid())
 
 
 GObject.threads_init()
