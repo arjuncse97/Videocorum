@@ -27,7 +27,7 @@ class GTK_Main(object):
         menu_bar.show()
         
         menu_bar.append(self.file_submenu())
-        menu_bar.append(self.generate_dummy_list_items("Subtitles"))
+        menu_bar.append(self.subtitles_submenu())
         menu_bar.append(self.generate_dummy_list_items("Settings"))
         menu_bar.append(self.generate_dummy_list_items("Help"))
 
@@ -94,9 +94,39 @@ class GTK_Main(object):
             print(name)
             self.player.set_state(Gst.State.NULL)
             self.player.set_property("uri", (name))
+            self.filename = name
+            #subtitle_add = "file:////home/sumedh/Desktop/se_test.srt"
+            #self.player.set_property("suburi", subtitle_add)
+            #self.player.set_property("subtitle-font-desc", "Sans, 18")
+            #print(subtitle_add)
             self.player.set_state(Gst.State.PLAYING)
         dialog.destroy()
 
+    def open_subtitles(self, widget, string):
+        dialog = Gtk.FileChooserDialog("Open", None,
+                Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+
+        dialog.set_default_response(Gtk.ResponseType.OK)
+
+        fil = Gtk.FileFilter()
+        fil.set_name("srt")
+        fil.add_pattern("*.srt")
+        dialog.add_filter(fil)
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            name = "file:///" + dialog.get_filename()
+            print(name)
+            _, duration = self.player.query_duration(Gst.Format.TIME)
+            print(duration)
+            self.player.set_state(Gst.State.NULL)
+            self.player.set_property("uri", self.filename)
+            self.player.set_property("suburi", name)
+            self.player.set_property("subtitle-font-desc", "Sans, 18")
+            self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, duration)
+            self.player.set_state(Gst.State.PLAYING)
+        dialog.destroy()
+
+ 
     def menuitem_response(self, widget, string):
         print "%s" % string
     
@@ -109,6 +139,19 @@ class GTK_Main(object):
 
         menu_items.show()
         root_menu = Gtk.MenuItem("File")
+        root_menu.show()
+        root_menu.set_submenu(menu)
+        return root_menu
+
+    def subtitles_submenu(self):
+        menu = Gtk.Menu()
+        menu_items = Gtk.MenuItem("Add Subtitles")
+        menu.append(menu_items)
+
+        menu_items.connect("activate", self.open_subtitles, "Subtitles")
+
+        menu_items.show()
+        root_menu = Gtk.MenuItem("Subtitles")
         root_menu.show()
         root_menu.set_submenu(menu)
         return root_menu
