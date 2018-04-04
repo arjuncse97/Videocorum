@@ -55,6 +55,13 @@ class GTK_Main(object):
         forward_button = Gtk.Button("Forward")
         forward_button.connect("clicked", self.forward_callback)
         buttonbox.add(forward_button)
+        fast_button = Gtk.Button("Fast")
+        fast_button.connect("clicked", self.fast_callback)
+        buttonbox.add(fast_button)
+        slow_button = Gtk.Button("Slow")
+        slow_button.connect("clicked", self.slow_callback)
+        buttonbox.add(slow_button)
+        self.pbRate = 1
         self.time_label = Gtk.Label()
         self.time_label.set_text("00:00 / 00:00")
         hbox.add(self.time_label)
@@ -241,6 +248,28 @@ class GTK_Main(object):
         seek_ns = pos_int + 10 * 1000000000
         print 'Forward: %d ns -> %d ns' % (pos_int, seek_ns)
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
+
+    def fast_callback(self, w):
+        self.pbRate += .25
+        print "rate changed to ", self.pbRate
+        rc, pos_int = self.player.query_position(Gst.Format.TIME)
+        print rc, pos_int
+        event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
+             Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
+             Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
+        self.player.send_event(event)        
+    
+    def slow_callback(self, w):
+        self.pbRate -= .25
+        print "rate changed to ", self.pbRate
+        rc, pos_int = self.player.query_position(Gst.Format.TIME)
+        print rc, pos_int
+        event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
+             Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
+             Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
+        self.player.send_event(event)        
+
+        
 
     def convert_ns(self, t):
         s,ns = divmod(t, 1000000000)
