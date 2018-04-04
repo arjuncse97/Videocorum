@@ -103,7 +103,7 @@ class GTK_Main(object):
         dialog.destroy()
 
     def open_subtitles(self, widget, string):
-        dialog = Gtk.FileChooserDialog("Open", None,
+        dialog = Gtk.FileChooserDialog(string, None,
                 Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
         dialog.set_default_response(Gtk.ResponseType.OK)
@@ -115,7 +115,7 @@ class GTK_Main(object):
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             name = "file:///" + dialog.get_filename()
-            print(name)
+            dialog.destroy()
             _, duration = self.player.query_duration(Gst.Format.TIME)
             print(duration)
             self.player.set_state(Gst.State.NULL)
@@ -124,7 +124,6 @@ class GTK_Main(object):
             self.player.set_property("subtitle-font-desc", "Sans, 18")
             self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, duration)
             self.player.set_state(Gst.State.PLAYING)
-        dialog.destroy()
 
  
     def menuitem_response(self, widget, string):
