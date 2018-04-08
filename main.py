@@ -85,8 +85,9 @@ class GTK_Main(object):
         dialog.set_default_response(Gtk.ResponseType.OK)
 
         fil = Gtk.FileFilter()
-        fil.set_name("mp4")
+        fil.set_name("Video files")
         fil.add_pattern("*.mp4")
+        fil.add_pattern("*.mkv")
         dialog.add_filter(fil)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
@@ -116,14 +117,17 @@ class GTK_Main(object):
         if response == Gtk.ResponseType.OK:
             name = "file:///" + dialog.get_filename()
             dialog.destroy()
-            _, duration = self.player.query_duration(Gst.Format.TIME)
+            _, duration = self.player.query_position(Gst.Format.TIME)
             print(duration)
-            self.player.set_state(Gst.State.NULL)
-            self.player.set_property("uri", self.filename)
+            print(10**10)
+            self.player.set_state(Gst.State.READY)
+            #self.player.set_property("uri", self.filename)
             self.player.set_property("suburi", name)
             self.player.set_property("subtitle-font-desc", "Sans, 18")
-            self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, duration)
             self.player.set_state(Gst.State.PLAYING)
+            #import time
+            #time.sleep(4)
+            #self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 10**10+duration)
 
  
     def menuitem_response(self, widget, string):
@@ -150,11 +154,17 @@ class GTK_Main(object):
         menu_items.connect("activate", self.open_subtitles, "Subtitles")
 
         menu_items.show()
+        menu_items = Gtk.MenuItem("Generate Subtitles")
+        menu.append(menu_items)
+        menu_items.connect("activate", self.auto_generate, "auto generate")
         root_menu = Gtk.MenuItem("Subtitles")
         root_menu.show()
         root_menu.set_submenu(menu)
         return root_menu
-    
+
+    def auto_generate(self, widget, name):
+        self.auto_generate_subtitles = thread.start_new_thread(self.start_generate, ())
+        return
     def generate_dummy_list_items(self, name):
         menu = Gtk.Menu()
         for i in range(3):
