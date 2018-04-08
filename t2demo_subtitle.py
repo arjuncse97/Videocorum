@@ -64,6 +64,14 @@ class GTK_Main(object):
         slow_button = Gtk.Button("Slow")
         slow_button.connect("clicked", self.slow_callback)
         buttonbox.add(slow_button)
+        self.box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL)
+        hbox.add(self.box)
+        #creating a slider and calculating its range      
+        self.slider = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 10000, 0.5)
+        self.slider_handler_id = self.slider.connect("value-changed", self.on_slider_seek)
+
+        self.box.pack_start(self.slider, True, True, 2)
+        vbox.pack_start(hbox, False, False, 0)
         self.pbRate = 1
 
         self.time_label = Gtk.Label()
@@ -145,7 +153,38 @@ class GTK_Main(object):
             widget.set_label(Gtk.STOCK_MEDIA_PLAY)
         else:
             self.player.set_state(Gst.State.PLAYING)
+            #starting up a timer to check on the current playback value
+            GLib.timeout_add(1000, self.update_slider)
             widget.set_label(Gtk.STOCK_MEDIA_PAUSE)
+
+    def on_slider_seek(self, widget):
+        seek_time_secs = self.slider.get_value()
+        self.player.seek_simple(Gst.Format.TIME,  Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT, seek_time_secs * Gst.SECOND) 
+    
+    #called periodically by the Glib timer, returns false to stop the timer
+    def update_slider(self):
+        if ("pause" in widget.get_label()):
+            return False # cancel timeout
+            
+        else:
+            success, self.duration = self.player.query_duration(Gst.Format.TIME)
+            if not success:
+                raise GenericException("Couldn't fetch song duration")
+            else:
+                self.slider.set_range(0, self.duration / Gst.SECOND)
+            #fetching the position, in nanosecs
+            success, position = self.player.query_position(Gst.Format.TIME)
+            if not success:
+                raise GenericException("Couldn't fetch current song position to update slider")
+
+            # block seek handler so we don't seek when we set_value()
+            self.slider.handler_block(self.slider_handler_id)
+
+            self.slider.set_value(float(position) / Gst.SECOND)
+
+            self.slider.handler_unblock(self.slider_handler_id)
+
+        return True # continue calling every x milliseconds
 
     def open_file(self, widget, string):
         dialog = Gtk.FileChooserDialog("Open", None,
