@@ -1,9 +1,11 @@
 import sys, os, thread, time
 import gi
+gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject, Gtk, Gdk
 
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
+gi.require_version('GstVideo', '1.0')
 from gi.repository import GdkX11, GstVideo
 
 
