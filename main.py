@@ -7,7 +7,7 @@ from gi.repository import Gst, GObject, Gtk
 from gi.repository import GdkX11, GstVideo
 import pysrt
 import ctypes
-
+import thread
 
 class GTK_Main(object):
       
@@ -123,14 +123,29 @@ class GTK_Main(object):
         dialog.add_filter(fil)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            name = "file:///" + dialog.get_filename()
+            #name = "file:///" + dialog.get_filename()
+            name = dialog.get_filename()
+            self.subtitle_name = name
             dialog.destroy()
-            
+            thread.start_new_thread(self.start_subtitles, ())
             #import time
             #time.sleep(4)
             #self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 10**10+duration)
 
- 
+    def start_subtitles(self):
+        subs = pysrt.open(self.subtitle_name)
+        state = False
+        string = ''
+        while True:
+            _, time_ns = self.player.query_position(Gst.Format.TIME)
+            #self.subtitle_box.set_label(str(subs.at(time_ns/(10**9))[0].text))
+            try:
+                string = str(subs.at(seconds = int(round(time_ns/(10**9))))[0].text)
+            except:
+                string = ''
+            if self.subtitle_box.get_label() != string:
+                self.subtitle_box.set_label(string)
+
     def menuitem_response(self, widget, string):
         print "%s" % string
     
