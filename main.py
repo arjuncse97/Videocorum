@@ -8,6 +8,20 @@ from gi.repository import GdkX11, GstVideo
 import pysrt
 import ctypes
 import thread
+import speech_recognition as sr
+import shutil
+from pydub import AudioSegment
+from pydub.silence import split_on_silence, detect_silence, detect_nonsilent
+
+r = sr.Recognizer()
+
+second = 1000
+threshold = 4 * second
+chunk_size = 30 * second
+
+counter = 0
+
+
 
 class GTK_Main(object):
       
@@ -180,8 +194,40 @@ class GTK_Main(object):
 
     def auto_generate(self, widget, name):
         #to_do
+        shutil.rmtree('./splitAudio')
+        os.mkdir('./splitAudio')
+        self.sound_file = AudioSegment.from_file(self.filename[8:], "mp4")
+        self.len_file = len(self.sound_file)
+        print("Length of track: " ,self.len_file/second, "seconds")
+        self.sub_write_file = pysrt.SubRipFile(encoding='utf-8')
+        self.sub_write_file.save(self.filename[8:-4] + ".srt", encoding='utf-8')                    
         self.auto_generate_subtitles = thread.start_new_thread(self.start_generate, ())
+        self.auto_generate_subtitles = thread.start_new_thread(self.show_generated, ())
         return
+
+    def show_generated(self):
+        subs = self.sub_write_file
+        state = False
+        string = ''
+        while True:
+            _, time_ns = self.player.query_position(Gst.Format.TIME)
+            #self.subtitle_box.set_label(str(subs.at(time_ns/(10**9))[0].text))
+            try:
+                string = str(subs.at(seconds = int(round(time_ns/(10**9))))[0].text)
+            except:
+                string = ''
+            if self.subtitle_box.get_label() != string:
+                self.subtitle_box.set_label(string)
+
+    def start_generate(self):
+        chunk_end = chunk_size
+        while(chunk_end < self.len_file):
+            chunk_file = self.sound_file[chunk_end - chunk_size:chunk_end]    
+            do_subtitles_generation(self.sub_write_file, chunk_file, chunk_end - chunk_size)
+            chunk_end += chunk_size
+        do_subtiles_generation(self.sub_write_file, self.sound_file[chunk_end - chunk_size:], chunk_end - chunk_size)
+        return
+    
     def generate_dummy_list_items(self, name):
         menu = Gtk.Menu()
         for i in range(3):
@@ -234,16 +280,58 @@ class GTK_Main(object):
             imagesink.set_property("force-aspect-ratio", True)
             video_window = self.movie_window.get_property('window')
             if sys.platform == "win32":
+                Gdk.threads_start()
                 if not video_window.ensure_native():
                     print("Error - video playback requires a native window")
                 ctypes.pythonapi.PyCapsule_GetPointer.restype = ctypes.c_void_p
                 ctypes.pythonapi.PyCapsule_GetPointer.argtypes = [ctypes.py_object]
                 drawingarea_gpointer = ctypes.pythonapi.PyCapsule_GetPointer(video_window.__gpointer__, None)
                 gdkdll = ctypes.CDLL ("libgdk-3-0.dll")
+                Gdk.treads_stop()
                 imagesink.set_window_handle(gdkdll.gdk_win32_window_get_handle(drawingarea_gpointer))
             else:
                 imagesink.set_window_handle(video_window.get_xid())
             #imagesink.set_window_handle(self.movie_window.get_property('window').get_xid())
+
+def do_subtitles_generation(sub_write_file,chunk_sound_file, start_chunk):    
+    voices = detect_nonsilent(chunk_sound_file, 
+        # must be silent for at least half a second
+        min_silence_len=50,
+
+        # consider it silent if quieter than -16 dBFS
+        silence_thresh=-29	)
+
+    global counter   
+    print(voices)
+    splits = [0]
+    i = 0
+    for voice in voices:
+        if (voice[1] > splits[i] + threshold):
+            i += 1
+            splits.append(voice[1])
+
+    splits.append(chunk_size)
+    print(splits)
+
+    print("Split complete")
+
+    for i in range(len(splits) - 1):
+        out_file = ".//splitAudio//chunk{0}.wav".format(i)
+        print("exporting", out_file)
+        chunk_sound_file[splits[i]:splits[i+1]].export(out_file, format="wav")
+        with sr.AudioFile(out_file) as source:
+            audio = r.record(source)
+            text = r.recognize_sphinx(audio)
+            #self.sub_write_file = pysrt.open(self.filename[8:-4]+".srt", encoding='utf-8')
+            sub = pysrt.SubRipItem()
+            sub.index = counter
+            counter += 1
+            sub.start.milliseconds = start_chunk + splits[i]
+            sub.end.milliseconds = start_chunk + splits[i+1]
+            sub.text = text
+            sub_write_file.append(sub)
+            #self.sub_write_file.save('my_srt.srt', encoding='utf-8')
+            print(text)
 
 
 GObject.threads_init()
