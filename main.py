@@ -5,6 +5,7 @@ from gi.repository import Gst, GObject, Gtk
 
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
 from gi.repository import GdkX11, GstVideo
+import pysrt
 import ctypes
 
 
@@ -40,7 +41,14 @@ class GTK_Main(object):
         #self.button.connect("clicked", self.start_stop)
         self.movie_window = Gtk.DrawingArea()
         vbox.add(self.movie_window)
-        
+       
+        hbox = Gtk.HBox()
+        self.subtitle_box = Gtk.Label("afkj")
+        #self.subtitle_box.set_text("ladfjksklajds")
+        self.subtitle_box.show()
+        hbox.add(self.subtitle_box)
+        vbox.pack_start(hbox, False, False, 0)
+
         hbox = Gtk.HBox()
         button_start = Gtk.Button(stock=Gtk.STOCK_MEDIA_PAUSE)
         hbox.add(button_start)
@@ -117,14 +125,7 @@ class GTK_Main(object):
         if response == Gtk.ResponseType.OK:
             name = "file:///" + dialog.get_filename()
             dialog.destroy()
-            _, duration = self.player.query_position(Gst.Format.TIME)
-            print(duration)
-            print(10**10)
-            self.player.set_state(Gst.State.READY)
-            #self.player.set_property("uri", self.filename)
-            self.player.set_property("suburi", name)
-            self.player.set_property("subtitle-font-desc", "Sans, 18")
-            self.player.set_state(Gst.State.PLAYING)
+            
             #import time
             #time.sleep(4)
             #self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 10**10+duration)
