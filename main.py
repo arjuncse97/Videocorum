@@ -179,6 +179,7 @@ class GTK_Main(object):
         return root_menu
 
     def auto_generate(self, widget, name):
+        #to_do
         self.auto_generate_subtitles = thread.start_new_thread(self.start_generate, ())
         return
     def generate_dummy_list_items(self, name):
