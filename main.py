@@ -12,6 +12,7 @@ import speech_recognition as sr
 import shutil
 from pydub import AudioSegment
 from pydub.silence import split_on_silence, detect_silence, detect_nonsilent
+import multiprocessing
 
 r = sr.Recognizer()
 
@@ -193,7 +194,6 @@ class GTK_Main(object):
         return root_menu
 
     def auto_generate(self, widget, name):
-        #to_do
         shutil.rmtree('./splitAudio')
         os.mkdir('./splitAudio')
         self.sound_file = AudioSegment.from_file(self.filename[8:], "mp4")
@@ -201,12 +201,18 @@ class GTK_Main(object):
         print("Length of track: " ,self.len_file/second, "seconds")
         self.sub_write_file = pysrt.SubRipFile(encoding='utf-8')
         self.sub_write_file.save(self.filename[8:-4] + ".srt", encoding='utf-8')                    
-        self.auto_generate_subtitles = thread.start_new_thread(self.start_generate, ())
+        
+        self.sub_write_file = multiprocessing.RawValue(pysrt.SubRipFile, self.sub_write_file)
+        gen = multiprocessing.Process(target = self.start_generate, args=())
+        #show = multiprocessing.Process(target = self.show_generated, args=())
+        gen.start()
+        #show.start()
         self.auto_generate_subtitles = thread.start_new_thread(self.show_generated, ())
+        #self.auto_generate_subtitles = thread.start_new_thread(self.start_generate, ())
         return
 
     def show_generated(self):
-        subs = self.sub_write_file
+        subs = self.sub_write_file.value
         state = False
         string = ''
         while True:
@@ -217,6 +223,7 @@ class GTK_Main(object):
             except:
                 string = ''
             if self.subtitle_box.get_label() != string:
+                print("displaying ", string)
                 self.subtitle_box.set_label(string)
 
     def start_generate(self):
