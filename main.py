@@ -212,13 +212,13 @@ class GTK_Main(object):
         return
 
     def show_generated(self):
-        subs = self.sub_write_file.value
         state = False
         string = ''
         while True:
             _, time_ns = self.player.query_position(Gst.Format.TIME)
             #self.subtitle_box.set_label(str(subs.at(time_ns/(10**9))[0].text))
             try:
+                subs = pysrt.open(self.filename[8:-4]+".srt")
                 string = str(subs.at(seconds = int(round(time_ns/(10**9))))[0].text)
             except:
                 string = ''
@@ -230,7 +230,7 @@ class GTK_Main(object):
         chunk_end = chunk_size
         while(chunk_end < self.len_file):
             chunk_file = self.sound_file[chunk_end - chunk_size:chunk_end]    
-            do_subtitles_generation(self.sub_write_file, chunk_file, chunk_end - chunk_size)
+            do_subtitles_generation(self.sub_write_file, self.filename[8:-4], chunk_file, chunk_end - chunk_size)
             chunk_end += chunk_size
         do_subtiles_generation(self.sub_write_file, self.filename[8:-4], self.sound_file[chunk_end - chunk_size:], chunk_end - chunk_size)
         return
