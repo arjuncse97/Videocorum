@@ -202,7 +202,7 @@ class GTK_Main(object):
         self.sub_write_file = pysrt.SubRipFile(encoding='utf-8')
         self.sub_write_file.save(self.filename[8:-4] + ".srt", encoding='utf-8')                    
         
-        self.sub_write_file = multiprocessing.RawValue(pysrt.SubRipFile, self.sub_write_file)
+        #self.sub_write_file = multiprocessing.RawValue(pysrt.SubRipFile, self.sub_write_file)
         gen = multiprocessing.Process(target = self.start_generate, args=())
         #show = multiprocessing.Process(target = self.show_generated, args=())
         gen.start()
@@ -232,7 +232,7 @@ class GTK_Main(object):
             chunk_file = self.sound_file[chunk_end - chunk_size:chunk_end]    
             do_subtitles_generation(self.sub_write_file, chunk_file, chunk_end - chunk_size)
             chunk_end += chunk_size
-        do_subtiles_generation(self.sub_write_file, self.sound_file[chunk_end - chunk_size:], chunk_end - chunk_size)
+        do_subtiles_generation(self.sub_write_file, self.filename[8:-4], self.sound_file[chunk_end - chunk_size:], chunk_end - chunk_size)
         return
     
     def generate_dummy_list_items(self, name):
@@ -300,7 +300,7 @@ class GTK_Main(object):
                 imagesink.set_window_handle(video_window.get_xid())
             #imagesink.set_window_handle(self.movie_window.get_property('window').get_xid())
 
-def do_subtitles_generation(sub_write_file,chunk_sound_file, start_chunk):    
+def do_subtitles_generation(sub_write_file, filename, chunk_sound_file, start_chunk):    
     voices = detect_nonsilent(chunk_sound_file, 
         # must be silent for at least half a second
         min_silence_len=50,
@@ -337,7 +337,7 @@ def do_subtitles_generation(sub_write_file,chunk_sound_file, start_chunk):
             sub.end.milliseconds = start_chunk + splits[i+1]
             sub.text = text
             sub_write_file.append(sub)
-            #self.sub_write_file.save('my_srt.srt', encoding='utf-8')
+            sub_write_file.save(filename + '.srt', encoding='utf-8')
             print(text)
 
 
