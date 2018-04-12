@@ -76,10 +76,10 @@ class GTK_Main(object):
         
         buttonbox = Gtk.HButtonBox()
         hbox.pack_start(buttonbox, False, False, 0)
-        rewind_button = Gtk.Button("Rewind")
+        rewind_button = Gtk.Button(Gtk.STOCK_MEDIA_REWIND)
         rewind_button.connect("clicked", self.rewind_callback)
         buttonbox.add(rewind_button)
-        forward_button = Gtk.Button("Forward")
+        forward_button = Gtk.Button(Gtk.STOCK_MEDIA_FORWARD)
         forward_button.connect("clicked", self.forward_callback)
         buttonbox.add(forward_button)
         fast_button = Gtk.Button("Fast")
