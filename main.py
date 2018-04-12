@@ -228,11 +228,12 @@ class GTK_Main(object):
 
     def start_generate(self):
         chunk_end = chunk_size
+        chunk_start = 0
         while(chunk_end < self.len_file):
-            chunk_file = self.sound_file[chunk_end - chunk_size:chunk_end]    
-            do_subtitles_generation(self.sub_write_file, self.filename[8:-4], chunk_file, chunk_end - chunk_size)
+            chunk_file = self.sound_file[chunk_start:chunk_end]    
+            chunk_start += do_subtitles_generation(self.sub_write_file, self.filename[8:-4], chunk_file, chunk_start)
             chunk_end += chunk_size
-        do_subtiles_generation(self.sub_write_file, self.filename[8:-4], self.sound_file[chunk_end - chunk_size:], chunk_end - chunk_size)
+        do_subtiles_generation(self.sub_write_file, self.filename[8:-4], self.sound_file[chunk_start:], chunk_start)
         return
     
     def generate_dummy_list_items(self, name):
@@ -312,12 +313,17 @@ def do_subtitles_generation(sub_write_file, filename, chunk_sound_file, start_ch
     print(voices)
     splits = [0]
     i = 0
+    if (len(voices) > 0 and voices[-1][1] == len(chunk_sound_file)):
+        del voices[-1]
     for voice in voices:
         if (voice[1] > splits[i] + threshold):
             i += 1
             splits.append(voice[1])
 
-    splits.append(chunk_size)
+    if (len(voices) > 0 and splits[-1] != voices[-1][1]):
+        splits.append(voices[-1][1])
+    end_chunk = splits[-1]
+    
     print(splits)
 
     print("Split complete")
@@ -339,6 +345,8 @@ def do_subtitles_generation(sub_write_file, filename, chunk_sound_file, start_ch
             sub_write_file.append(sub)
             sub_write_file.save(filename + '.srt', encoding='utf-8')
             print(text)
+
+    return end_chunk
 
 
 GObject.threads_init()
