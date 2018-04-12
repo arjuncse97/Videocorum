@@ -103,23 +103,23 @@ class GTK_Main(object):
         hbox.add(self.time_label)
         window.show_all()
 
-        self.player = Gst.Pipeline.new("player")
-        source = Gst.ElementFactory.make("filesrc", "file-source")
-        demuxer = Gst.ElementFactory.make("oggdemux", "demuxer")
-        demuxer.connect("pad-added", self.demuxer_callback)
-        self.audio_decoder = Gst.ElementFactory.make("vorbisdec", "vorbis-decoder")
-        audioconv = Gst.ElementFactory.make("audioconvert", "converter")
-        audiosink = Gst.ElementFactory.make("autoaudiosink", "audio-output")
+        #self.player = Gst.Pipeline.new("player")
+        #source = Gst.ElementFactory.make("filesrc", "file-source")
+        #demuxer = Gst.ElementFactory.make("oggdemux", "demuxer")
+        #demuxer.connect("pad-added", self.demuxer_callback)
+        #self.audio_decoder = Gst.ElementFactory.make("vorbisdec", "vorbis-decoder")
+        #audioconv = Gst.ElementFactory.make("audioconvert", "converter")
+        #audiosink = Gst.ElementFactory.make("autoaudiosink", "audio-output")
 
-        for ele in [source, demuxer, self.audio_decoder, audioconv, audiosink]:
-            self.player.add(ele)
-        source.link(demuxer)
-        self.audio_decoder.link(audioconv)
-        audioconv.link(audiosink)
+        #for ele in [source, demuxer, self.audio_decoder, audioconv, audiosink]:
+        #    self.player.add(ele)
+        #source.link(demuxer)
+        #self.audio_decoder.link(audioconv)
+        #audioconv.link(audiosink)
 
-        bus = self.player.get_bus()
-        bus.add_signal_watch()
-        bus.connect("message", self.on_message)
+        #bus = self.player.get_bus()
+        #bus.add_signal_watch()
+        #bus.connect("message", self.on_message)
 
          
         window.show_all()
