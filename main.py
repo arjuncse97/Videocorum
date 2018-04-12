@@ -418,7 +418,7 @@ class GTK_Main(object):
         print rc, pos_int
         event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
              Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
-             Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
+             Gst.SeekType.SET, pos_int, Gst.SeekType.SET, 0)
         self.player.send_event(event)        
     
     def slow_callback(self, w):
@@ -428,7 +428,7 @@ class GTK_Main(object):
         print rc, pos_int
         event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
              Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
-             Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
+             Gst.SeekType.SET, pos_int, Gst.SeekType.SET, 0)
         self.player.send_event(event)        
 
 
