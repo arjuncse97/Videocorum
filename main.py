@@ -35,7 +35,7 @@ class GTK_Main(object):
         window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         window.set_title("Videocorum")
         window.set_default_size(500, 400)
-        window.connect("destroy", Gtk.main_quit, "WM destroy")
+        window.connect("destroy", self.main_quit, "WM destroy")
         
 
         vbox = Gtk.VBox(False, 0)
@@ -97,6 +97,7 @@ class GTK_Main(object):
         self.box.pack_start(self.slider, True, True, 2)
         vbox.pack_start(hbox, False, False, 0)
         self.pbRate = 1
+        self.gen = None
 
         self.time_label = Gtk.Label()
         self.time_label.set_text("00:00 / 00:00")
@@ -132,6 +133,12 @@ class GTK_Main(object):
         bus.enable_sync_message_emission()
         bus.connect("message", self.on_message)
         bus.connect("sync-message::element", self.on_sync_message)
+
+    def main_quit(self, *args):
+        if self.gen:
+            self.gen.terminate()
+            self.gen.join()
+        Gtk.main_quit(args[1])
 
 
     def action_stop(self, widget, button_start):
@@ -289,6 +296,10 @@ class GTK_Main(object):
         menu_items.connect("activate", self.open_subtitles, "Subtitles")
 
         menu_items.show()
+        menu_items = Gtk.MenuItem("Generate Subtitles")
+        menu.append(menu_items)
+        menu_items.connect("activate", self.auto_generate, "auto generate")
+
         root_menu = Gtk.MenuItem("Subtitles")
         root_menu.show()
         root_menu.set_submenu(menu)
@@ -304,9 +315,9 @@ class GTK_Main(object):
         self.sub_write_file.save(self.filename[8:-4] + ".srt", encoding='utf-8')                    
         
         #self.sub_write_file = multiprocessing.RawValue(pysrt.SubRipFile, self.sub_write_file)
-        gen = multiprocessing.Process(target = self.start_generate, args=())
+        self.gen = multiprocessing.Process(target = self.start_generate, args=())
         #show = multiprocessing.Process(target = self.show_generated, args=())
-        gen.start()
+        self.gen.start()
         #show.start()
         self.auto_generate_subtitles = thread.start_new_thread(self.show_generated, ())
         #self.auto_generate_subtitles = thread.start_new_thread(self.start_generate, ())
