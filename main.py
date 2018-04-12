@@ -63,6 +63,17 @@ class GTK_Main(object):
         hbox.add(self.subtitle_box)
         vbox.pack_start(hbox, False, False, 0)
 
+        #SEEK BAR
+        hbox_slider = Gtk.HBox()
+        self.box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL)
+        hbox_slider.add(self.box)
+        #creating a slider and calculating its range      
+        self.slider = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1000, 1)
+        self.slider_handler_id = self.slider.connect("value-changed", self.on_slider_seek)
+        self.box.pack_start(self.slider, True, True, 2)
+        vbox.pack_start(hbox_slider, False, False, 0)
+
+        # all buttons
         hbox = Gtk.HBox()
         button_start = Gtk.Button(stock=Gtk.STOCK_MEDIA_PAUSE)
         hbox.add(button_start)
@@ -88,13 +99,7 @@ class GTK_Main(object):
         slow_button = Gtk.Button("Slow")
         slow_button.connect("clicked", self.slow_callback)
         buttonbox.add(slow_button)
-        self.box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL)
-        hbox.add(self.box)
-        #creating a slider and calculating its range      
-        self.slider = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 10000, 0.5)
-        self.slider_handler_id = self.slider.connect("value-changed", self.on_slider_seek)
 
-        self.box.pack_start(self.slider, True, True, 2)
         vbox.pack_start(hbox, False, False, 0)
         self.pbRate = 1
         self.gen = None
@@ -179,25 +184,26 @@ class GTK_Main(object):
             time.sleep(1)
 
     def action_pause(self, widget):
-        if ("pause" in widget.get_label()):
+        if ("pause" in widget.get_label()): # paused! label set to play
+            # print "paused! label set to play"
             self.player.set_state(Gst.State.PAUSED)
             widget.set_label(Gtk.STOCK_MEDIA_PLAY)
-        else:
+        else: # playing! label set to pause
+            # print "playing! label set to pause"
             self.player.set_state(Gst.State.PLAYING)
+            widget.set_label(Gtk.STOCK_MEDIA_PAUSE) 
             #starting up a timer to check on the current playback value
-            GLib.timeout_add(1000, self.update_slider)
-            widget.set_label(Gtk.STOCK_MEDIA_PAUSE)
+            GLib.timeout_add(1000, self.update_slider, widget)
 
     def on_slider_seek(self, widget):
         seek_time_secs = self.slider.get_value()
         self.player.seek_simple(Gst.Format.TIME,  Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT, seek_time_secs * Gst.SECOND) 
     
     #called periodically by the Glib timer, returns false to stop the timer
-    def update_slider(self):
-        if ("pause" in widget.get_label()):
+    def update_slider(self, widget):
+         if ("play" in widget.get_label()):# if paused
             return False # cancel timeout
-            
-        else:
+         else:
             success, self.duration = self.player.query_duration(Gst.Format.TIME)
             if not success:
                 raise GenericException("Couldn't fetch song duration")
@@ -215,7 +221,7 @@ class GTK_Main(object):
 
             self.slider.handler_unblock(self.slider_handler_id)
 
-        return True # continue calling every x milliseconds
+         return True # continue calling every x milliseconds
 
     def open_file(self, widget, string):
         dialog = Gtk.FileChooserDialog("Open", None,
@@ -235,6 +241,7 @@ class GTK_Main(object):
             self.player.set_property("uri", (name))
             self.filename = name
             self.player.set_state(Gst.State.PLAYING)
+            GLib.timeout_add(1000, self.update_slider, widget)
         dialog.destroy()
         
     def open_subtitles(self, widget, string):
