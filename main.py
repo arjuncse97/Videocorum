@@ -63,50 +63,84 @@ class GTK_Main(object):
         hbox.add(self.subtitle_box)
         vbox.pack_start(hbox, False, False, 0)
 
-        #SEEK BAR
-        hbox_slider = Gtk.HBox()
-        self.box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL)
-        hbox_slider.add(self.box)
+        # SEEK BAR
+        
+        # self.box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL)
+        # hbox_slider.add(self.box)
         #creating a slider and calculating its range      
         self.slider = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1000, 1)
         self.slider_handler_id = self.slider.connect("value-changed", self.on_slider_seek)
-        self.box.pack_start(self.slider, True, True, 2)
+        # self.box.pack_start(self.slider, True, True, 0)
+        hbox_slider = Gtk.HBox()
+        hbox_slider.add(self.slider)
         vbox.pack_start(hbox_slider, False, False, 0)
 
-        # all buttons
         hbox = Gtk.HBox()
-        button_start = Gtk.Button(stock=Gtk.STOCK_MEDIA_PAUSE)
-        hbox.add(button_start)
-        button_start.connect("clicked", self.action_pause)
-        button_start.show()
-        button = Gtk.Button(stock=Gtk.STOCK_MEDIA_STOP)
-        hbox.add(button)
-        button.connect("clicked", self.action_stop, button_start)
-        button.show()
-        vbox.pack_start(hbox, False, False, 0)
-        
-        buttonbox = Gtk.HButtonBox()
-        hbox.pack_start(buttonbox, False, False, 0)
-        rewind_button = Gtk.Button(Gtk.STOCK_MEDIA_REWIND)
-        rewind_button.connect("clicked", self.rewind_callback)
-        buttonbox.add(rewind_button)
-        forward_button = Gtk.Button(Gtk.STOCK_MEDIA_FORWARD)
-        forward_button.connect("clicked", self.forward_callback)
-        buttonbox.add(forward_button)
-        fast_button = Gtk.Button("Fast")
-        fast_button.connect("clicked", self.fast_callback)
-        buttonbox.add(fast_button)
-        slow_button = Gtk.Button("Slow")
-        slow_button.connect("clicked", self.slow_callback)
-        buttonbox.add(slow_button)
-
-        vbox.pack_start(hbox, False, False, 0)
-        self.pbRate = 1
-        self.gen = None
-
+        toolbar = Gtk.Toolbar()
+        hbox.add(toolbar)
         self.time_label = Gtk.Label()
         self.time_label.set_text("00:00 / 00:00")
         hbox.add(self.time_label)
+        # hbox.add(self.slider)
+
+        self.play_toolbutton = Gtk.ToolButton()
+        self.play_toolbutton.set_label("gtk-media-pause")
+        self.play_toolbutton.set_icon_name("gtk-media-pause")
+        self.play_toolbutton.connect("clicked", self.action_pause)
+        toolbar.add(self.play_toolbutton)
+
+        self.rewind_toolbutton = Gtk.ToolButton()
+        self.rewind_toolbutton.set_icon_name("gtk-media-rewind")
+        self.rewind_toolbutton.connect("clicked", self.rewind_callback)        
+        toolbar.add(self.rewind_toolbutton)
+
+        self.stop_toolbutton = Gtk.ToolButton()
+        self.stop_toolbutton.set_label("gtk-media-stop")
+        self.stop_toolbutton.set_icon_name("gtk-media-stop")
+        self.stop_toolbutton.connect("clicked", self.action_stop)
+        toolbar.add(self.stop_toolbutton)
+
+        self.forward_toolbutton = Gtk.ToolButton()
+        self.forward_toolbutton.set_icon_name("gtk-media-forward")
+        self.forward_toolbutton.connect("clicked", self.forward_callback)
+        toolbar.add(self.forward_toolbutton)
+
+        # separatortoolitem = Gtk.SeparatorToolItem()
+        # toolbar.add(separatortoolitem)
+
+        vbox.pack_start(hbox, False, False, 0)
+
+        # all buttons
+        # hbox = Gtk.HBox()
+        # button_start = Gtk.Button(stock=Gtk.STOCK_MEDIA_PAUSE)
+        # hbox.add(button_start)
+        # button_start.connect("clicked", self.action_pause)
+        # button_start.show()
+        # button = Gtk.Button(stock=Gtk.STOCK_MEDIA_STOP)
+        # hbox.add(button)
+        # button.connect("clicked", self.action_stop)
+        # button.show()
+        # vbox.pack_start(hbox, False, False, 0)
+        
+        # buttonbox = Gtk.HButtonBox()
+        # hbox.pack_start(buttonbox, False, False, 0)
+        # rewind_button = Gtk.Button(Gtk.STOCK_MEDIA_REWIND)
+        # rewind_button.connect("clicked", self.rewind_callback)
+        # buttonbox.add(rewind_button)
+        # forward_button = Gtk.Button(Gtk.STOCK_MEDIA_FORWARD)
+        # forward_button.connect("clicked", self.forward_callback)
+        # buttonbox.add(forward_button)
+        # fast_button = Gtk.Button("Fast")
+        # fast_button.connect("clicked", self.fast_callback)
+        # buttonbox.add(fast_button)
+        # slow_button = Gtk.Button("Slow")
+        # slow_button.connect("clicked", self.slow_callback)
+        # buttonbox.add(slow_button)
+
+        # vbox.pack_start(hbox, False, False, 0)
+        self.pbRate = 1
+        self.gen = None
+        
         window.show_all()
 
         #self.player = Gst.Pipeline.new("player")
@@ -146,11 +180,13 @@ class GTK_Main(object):
         Gtk.main_quit(args[1])
 
 
-    def action_stop(self, widget, button_start):
+    def action_stop(self, widget):
         self.player.set_state(Gst.State.NULL)
         self.player.set_state(Gst.State.PLAYING)
         self.player.set_state(Gst.State.PAUSED)
-        button_start.set_label(Gtk.STOCK_MEDIA_PLAY)
+        # button_start.set_label(Gtk.STOCK_MEDIA_PLAY)
+        self.play_toolbutton.set_label(Gtk.STOCK_MEDIA_PLAY)
+        self.play_toolbutton.set_icon_name(Gtk.STOCK_MEDIA_PLAY)
         
                 
     def play_thread(self):
@@ -185,12 +221,14 @@ class GTK_Main(object):
 
     def action_pause(self, widget):
         if ("pause" in widget.get_label()): # paused! label set to play
-            # print "paused! label set to play"
+            self.play_toolbutton.set_icon_name("gtk-media-play")
             self.player.set_state(Gst.State.PAUSED)
+            self.play_toolbutton.set_label("gtk-media-play")
             widget.set_label(Gtk.STOCK_MEDIA_PLAY)
         else: # playing! label set to pause
-            # print "playing! label set to pause"
             self.player.set_state(Gst.State.PLAYING)
+            self.play_toolbutton.set_icon_name("gtk-media-pause")
+            self.play_toolbutton.set_label("gtk-media-play")
             widget.set_label(Gtk.STOCK_MEDIA_PAUSE) 
             #starting up a timer to check on the current playback value
             GLib.timeout_add(1000, self.update_slider, widget)
@@ -201,7 +239,7 @@ class GTK_Main(object):
     
     #called periodically by the Glib timer, returns false to stop the timer
     def update_slider(self, widget):
-         if ("play" in widget.get_label()):# if paused
+         if ("play" in self.play_toolbutton.get_label()):# if paused
             return False # cancel timeout
          else:
             success, self.duration = self.player.query_duration(Gst.Format.TIME)
@@ -422,12 +460,14 @@ class GTK_Main(object):
             seek_ns = 0
         print 'Backward: %d ns -> %d ns' % (pos_int, seek_ns)
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
+        GLib.timeout_add(1000, self.update_slider, w)
 
     def forward_callback(self, w):
         rc, pos_int = self.player.query_position(Gst.Format.TIME)
         seek_ns = pos_int + 10 * 1000000000
         print 'Forward: %d ns -> %d ns' % (pos_int, seek_ns)
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
+        GLib.timeout_add(1000, self.update_slider, w)        
 
     def fast_callback(self, w):
         self.pbRate += .25
