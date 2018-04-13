@@ -132,7 +132,7 @@ class GTK_Main(object):
         
         self.player = Gst.ElementFactory.make("playbin", "player")
         print(type(self.player))
-	print(self.player)
+        print(self.player)
         bus = self.player.get_bus()
         bus.add_signal_watch()
         bus.enable_sync_message_emission()
@@ -379,20 +379,20 @@ class GTK_Main(object):
 
 
 
-    def start_stop(self, w):
-        if self.button.get_label() == "Start":
-            filepath = self.entry.get_text().strip()
-            if os.path.isfile(filepath):
-                filepath = os.path.realpath(filepath)
-                self.button.set_label("Stop")
-                self.player.set_property("uri", "file://" + filepath)
-                self.player.set_state(Gst.State.PLAYING)
-                self.play_thread_id = thread.start_new_thread(self.play_thread, ())
-            else:
-            	self.play_thread_id = None
-                self.player.set_state(Gst.State.NULL)
-                self.button.set_label("Start")
-                self.time_label.set_text("00:00 / 00:00")
+    # def start_stop(self, w):
+    #     if self.button.get_label() == "Start":
+    #         filepath = self.entry.get_text().strip()
+    #         if os.path.isfile(filepath):
+    #             filepath = os.path.realpath(filepath)
+    #             self.button.set_label("Stop")
+    #             self.player.set_property("uri", "file://" + filepath)
+    #             self.player.set_state(Gst.State.PLAYING)
+    #             self.play_thread_id = thread.start_new_thread(self.play_thread, ())
+    #         else:
+    #         	self.play_thread_id = None
+    #             self.player.set_state(Gst.State.NULL)
+    #             self.button.set_label("Start")
+    #             self.time_label.set_text("00:00 / 00:00")
                 
                 
     def on_message(self, bus, message):
@@ -436,7 +436,7 @@ class GTK_Main(object):
         print rc, pos_int
         event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
              Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
-             Gst.SeekType.SET, pos_int, Gst.SeekType.SET, 0)
+             Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
         self.player.send_event(event)        
     
     def slow_callback(self, w):
@@ -446,7 +446,7 @@ class GTK_Main(object):
         print rc, pos_int
         event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
              Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
-             Gst.SeekType.SET, pos_int, Gst.SeekType.SET, 0)
+             Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
         self.player.send_event(event)        
 
 
