@@ -58,7 +58,7 @@ class GTK_Main(object):
         vbox.add(self.movie_window)
        
         hbox = Gtk.HBox()
-        self.subtitle_box = Gtk.Label("afkj")
+        self.subtitle_box = Gtk.Label(" ")
         self.subtitle_box.show()
         hbox.add(self.subtitle_box)
         vbox.pack_start(hbox, False, False, 0)
@@ -78,9 +78,9 @@ class GTK_Main(object):
         hbox = Gtk.HBox()
         toolbar = Gtk.Toolbar()
         hbox.add(toolbar)
-        self.time_label = Gtk.Label()
-        self.time_label.set_text("00:00 / 00:00")
-        hbox.add(self.time_label)
+        #self.time_label = Gtk.Label()
+        #self.time_label.set_text("00:00 / 00:00")
+        #hbox.add(self.time_label)
         # hbox.add(self.slider)
 
         self.play_toolbutton = Gtk.ToolButton()
@@ -90,7 +90,7 @@ class GTK_Main(object):
         toolbar.add(self.play_toolbutton)
 
         self.rewind_toolbutton = Gtk.ToolButton()
-        self.rewind_toolbutton.set_icon_name("gtk-media-rewind")
+        self.rewind_toolbutton.set_icon_name("gtk-media-forward")
         self.rewind_toolbutton.connect("clicked", self.rewind_callback)        
         toolbar.add(self.rewind_toolbutton)
 
@@ -101,7 +101,7 @@ class GTK_Main(object):
         toolbar.add(self.stop_toolbutton)
 
         self.forward_toolbutton = Gtk.ToolButton()
-        self.forward_toolbutton.set_icon_name("gtk-media-forward")
+        self.forward_toolbutton.set_icon_name("gtk-media-rewind")
         self.forward_toolbutton.connect("clicked", self.forward_callback)
         toolbar.add(self.forward_toolbutton)
 
@@ -192,7 +192,8 @@ class GTK_Main(object):
     def play_thread(self):
         play_thread_id = self.play_thread_id
         Gdk.threads_enter()
-        self.time_label.set_text("00:00 / 00:00")
+        #self.time_label.set_text("00:00 / 00:00")
+        hbox.add(self.time_label)
         Gdk.threads_leave()
 
         while play_thread_id == self.play_thread_id:
@@ -203,7 +204,7 @@ class GTK_Main(object):
                     continue
                 dur_str = self.convert_ns(dur_int)
                 Gdk.threads_enter()
-                self.time_label.set_text("00:00 / " + dur_str)
+                #self.time_label.set_text("00:00 / " + dur_str)
                 Gdk.threads_leave()
                 break
             except:
@@ -215,7 +216,7 @@ class GTK_Main(object):
             pos_str = self.convert_ns(pos_int)
             if play_thread_id == self.play_thread_id:
                 Gdk.threads_enter()
-                self.time_label.set_text(pos_str + " / " + dur_str)
+                #self.time_label.set_text(pos_str + " / " + dur_str)
                 Gdk.threads_leave()
             time.sleep(1)
 
