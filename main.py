@@ -58,7 +58,7 @@ class GTK_Main(object):
         vbox.add(self.movie_window)
        
         hbox = Gtk.HBox()
-        self.subtitle_box = Gtk.Label("afkj")
+        self.subtitle_box = Gtk.Label(" ")
         self.subtitle_box.show()
         hbox.add(self.subtitle_box)
         vbox.pack_start(hbox, False, False, 0)
