@@ -246,7 +246,11 @@ class GTK_Main(object):
 
     def on_slider_seek(self, widget):
         seek_time_secs = self.slider.get_value()
-        self.player.seek_simple(Gst.Format.TIME,  Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT, seek_time_secs * Gst.SECOND) 
+        self.player.seek_simple(Gst.Format.TIME,  Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT, seek_time_secs * Gst.SECOND)
+        self.gen.terminate()
+        self.gen.join()
+        self.gen = multiprocessing.Process(target = self.start_generate, args=())
+        self.gen.start()
     
     #called periodically by the Glib timer, returns false to stop the timer
     def update_slider(self, widget):
@@ -401,8 +405,9 @@ class GTK_Main(object):
                 self.subtitle_box.set_label(string)
 
     def start_generate(self):
-        chunk_end = chunk_size
-        chunk_start = 0
+        _, chunk_start = (self.player.query_position(Gst.Format.TIME)/ (10**6) ) + 10 * second
+        chunk_end = chunk_start + chunk_size
+        #chunk_start = 0
         while(chunk_end < self.len_file):
             chunk_file = self.sound_file[chunk_start:chunk_end]    
             chunk_start += do_subtitles_generation(self.sub_write_file, self.filename[8:-4], chunk_file, chunk_start)
