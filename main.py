@@ -177,11 +177,12 @@ class GTK_Main(object):
     def on_slider_seek(self, widget):
         seek_time_secs = self.slider.get_value()
         self.player.seek_simple(Gst.Format.TIME,  Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT, seek_time_secs * Gst.SECOND)
-        self.gen.terminate()
-        self.gen.join()
-        self.gen = multiprocessing.Process(target = self.start_generate, args=())
-        self.gen.start()
-    
+        if self.gen:
+            self.gen.terminate()
+            self.gen.join()
+            self.gen = multiprocessing.Process(target = self.start_generate, args=())
+            self.gen.start()
+        
     #called periodically by the Glib timer, returns false to stop the timer
     def update_slider(self, widget):
          if ("play" in self.play_toolbutton.get_label()):# if paused
