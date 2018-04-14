@@ -119,60 +119,15 @@ class GTK_Main(object):
         # separatortoolitem = Gtk.SeparatorToolItem()
         # toolbar.add(separatortoolitem)
 
+        self.volume_button = Gtk.VolumeButton()
+        self.volume_button.connect("value-changed", self.change_volume)
+        self.volume_button.set_value(1)
+        hbox.add(self.volume_button)
         vbox.pack_start(hbox, False, False, 0)
 
-        # all buttons
-        # hbox = Gtk.HBox()
-        # button_start = Gtk.Button(stock=Gtk.STOCK_MEDIA_PAUSE)
-        # hbox.add(button_start)
-        # button_start.connect("clicked", self.action_pause)
-        # button_start.show()
-        # button = Gtk.Button(stock=Gtk.STOCK_MEDIA_STOP)
-        # hbox.add(button)
-        # button.connect("clicked", self.action_stop)
-        # button.show()
-        # vbox.pack_start(hbox, False, False, 0)
-        
-        # buttonbox = Gtk.HButtonBox()
-        # hbox.pack_start(buttonbox, False, False, 0)
-        # rewind_button = Gtk.Button(Gtk.STOCK_MEDIA_REWIND)
-        # rewind_button.connect("clicked", self.rewind_callback)
-        # buttonbox.add(rewind_button)
-        # forward_button = Gtk.Button(Gtk.STOCK_MEDIA_FORWARD)
-        # forward_button.connect("clicked", self.forward_callback)
-        # buttonbox.add(forward_button)
-        # fast_button = Gtk.Button("Fast")
-        # fast_button.connect("clicked", self.fast_callback)
-        # buttonbox.add(fast_button)
-        # slow_button = Gtk.Button("Slow")
-        # slow_button.connect("clicked", self.slow_callback)
-        # buttonbox.add(slow_button)
-
-        # vbox.pack_start(hbox, False, False, 0)
         self.pbRate = 1
         self.gen = None
         
-        window.show_all()
-
-        #self.player = Gst.Pipeline.new("player")
-        #source = Gst.ElementFactory.make("filesrc", "file-source")
-        #demuxer = Gst.ElementFactory.make("oggdemux", "demuxer")
-        #demuxer.connect("pad-added", self.demuxer_callback)
-        #self.audio_decoder = Gst.ElementFactory.make("vorbisdec", "vorbis-decoder")
-        #audioconv = Gst.ElementFactory.make("audioconvert", "converter")
-        #audiosink = Gst.ElementFactory.make("autoaudiosink", "audio-output")
-
-        #for ele in [source, demuxer, self.audio_decoder, audioconv, audiosink]:
-        #    self.player.add(ele)
-        #source.link(demuxer)
-        #self.audio_decoder.link(audioconv)
-        #audioconv.link(audiosink)
-
-        #bus = self.player.get_bus()
-        #bus.add_signal_watch()
-        #bus.connect("message", self.on_message)
-
-         
         window.show_all()
         
         self.player = Gst.ElementFactory.make("playbin", "player")
@@ -189,7 +144,12 @@ class GTK_Main(object):
             self.gen.terminate()
             self.gen.join()
         Gtk.main_quit(args[1])
-
+    
+    def change_volume(self, widget, *args):
+        print(self.player.set_state(Gst.State.READY))
+        self.player.set_property('volume', self.volume_button.get_value())
+        print(self.player.set_state(Gst.State.PLAYING))
+        return
 
     def action_stop(self, widget):
         self.player.set_state(Gst.State.NULL)
@@ -198,37 +158,7 @@ class GTK_Main(object):
         # button_start.set_label(Gtk.STOCK_MEDIA_PLAY)
         self.play_toolbutton.set_label(Gtk.STOCK_MEDIA_PLAY)
         self.play_toolbutton.set_icon_name(Gtk.STOCK_MEDIA_PLAY)
-        
-                
-    # def play_thread(self):
-    #     play_thread_id = self.play_thread_id
-    #     Gdk.threads_enter()
-    #     self.time_label.set_text("00:00 / 00:00")
-    #     Gdk.threads_leave()
-
-    #     while play_thread_id == self.play_thread_id:
-    #         try:
-    #             time.sleep(0.2)
-    #             dur_int = self.player.query_duration(Gst.Format.TIME, None)[0]
-    #             if dur_int == -1:
-    #                 continue
-    #             dur_str = self.convert_ns(dur_int)
-    #             Gdk.threads_enter()
-    #             self.time_label.set_text("00:00 / " + dur_str)
-    #             Gdk.threads_leave()
-    #             break
-    #         except:
-    #             pass
-
-    #     time.sleep(0.2)
-    #     while play_thread_id == self.play_thread_id:
-    #         pos_int = self.player.query_position(Gst.Format.TIME, None)[0]
-    #         pos_str = self.convert_ns(pos_int)
-    #         if play_thread_id == self.play_thread_id:
-    #             Gdk.threads_enter()
-    #             self.time_label.set_text(pos_str + " / " + dur_str)
-    #             Gdk.threads_leave()
-    #         time.sleep(1)
+        self.slider.set_value(0)
 
     def action_pause(self, widget):
         if ("pause" in widget.get_label()): # paused! label set to play
