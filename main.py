@@ -189,35 +189,35 @@ class GTK_Main(object):
         self.play_toolbutton.set_icon_name(Gtk.STOCK_MEDIA_PLAY)
         
                 
-    def play_thread(self):
-        play_thread_id = self.play_thread_id
-        Gdk.threads_enter()
-        self.time_label.set_text("00:00 / 00:00")
-        Gdk.threads_leave()
+    # def play_thread(self):
+    #     play_thread_id = self.play_thread_id
+    #     Gdk.threads_enter()
+    #     self.time_label.set_text("00:00 / 00:00")
+    #     Gdk.threads_leave()
 
-        while play_thread_id == self.play_thread_id:
-            try:
-                time.sleep(0.2)
-                dur_int = self.player.query_duration(Gst.Format.TIME, None)[0]
-                if dur_int == -1:
-                    continue
-                dur_str = self.convert_ns(dur_int)
-                Gdk.threads_enter()
-                self.time_label.set_text("00:00 / " + dur_str)
-                Gdk.threads_leave()
-                break
-            except:
-                pass
+    #     while play_thread_id == self.play_thread_id:
+    #         try:
+    #             time.sleep(0.2)
+    #             dur_int = self.player.query_duration(Gst.Format.TIME, None)[0]
+    #             if dur_int == -1:
+    #                 continue
+    #             dur_str = self.convert_ns(dur_int)
+    #             Gdk.threads_enter()
+    #             self.time_label.set_text("00:00 / " + dur_str)
+    #             Gdk.threads_leave()
+    #             break
+    #         except:
+    #             pass
 
-        time.sleep(0.2)
-        while play_thread_id == self.play_thread_id:
-            pos_int = self.player.query_position(Gst.Format.TIME, None)[0]
-            pos_str = self.convert_ns(pos_int)
-            if play_thread_id == self.play_thread_id:
-                Gdk.threads_enter()
-                self.time_label.set_text(pos_str + " / " + dur_str)
-                Gdk.threads_leave()
-            time.sleep(1)
+    #     time.sleep(0.2)
+    #     while play_thread_id == self.play_thread_id:
+    #         pos_int = self.player.query_position(Gst.Format.TIME, None)[0]
+    #         pos_str = self.convert_ns(pos_int)
+    #         if play_thread_id == self.play_thread_id:
+    #             Gdk.threads_enter()
+    #             self.time_label.set_text(pos_str + " / " + dur_str)
+    #             Gdk.threads_leave()
+    #         time.sleep(1)
 
     def action_pause(self, widget):
         if ("pause" in widget.get_label()): # paused! label set to play
@@ -243,12 +243,18 @@ class GTK_Main(object):
             return False # cancel timeout
          else:
             success, self.duration = self.player.query_duration(Gst.Format.TIME)
+            self.total_time = self.convert_ns(self.duration)
             if not success:
                 raise GenericException("Couldn't fetch song duration")
             else:
                 self.slider.set_range(0, self.duration / Gst.SECOND)
             #fetching the position, in nanosecs
             success, position = self.player.query_position(Gst.Format.TIME)
+            self.current_time = self.convert_ns(position)
+            display_time = self.current_time + " / " + self.total_time 
+            # print(display_time)
+            self.time_label.set_text(display_time)            
+            # print(position)
             if not success:
                 raise GenericException("Couldn't fetch current song position to update slider")
 
@@ -434,18 +440,26 @@ class GTK_Main(object):
                 
                 
     def on_message(self, bus, message):
+        # print "in on_message"
+        # print(message.type)
         t = message.type
         if t == Gst.MessageType.EOS:
             self.play_thread_id = None
             self.player.set_state(Gst.State.NULL)
-            self.button.set_label("Start")
+            self.slider.handler_block(self.slider_handler_id)
+
+            self.slider.set_value(float(0) / Gst.SECOND)
+
+            self.slider.handler_unblock(self.slider_handler_id)
+            # self.button.set_label("Start")
+
             self.time_label.set_text("00:00 / 00:00")
         elif t == Gst.MessageType.ERROR:
             self.play_thread_id = None
             self.player.set_state(Gst.State.NULL)
             err, debug = message.parse_error()
             #print "Error: %s" % err, debug
-            self.button.set_label("Start")
+            # self.button.set_label("Start")
             self.time_label.set_text("00:00 / 00:00")
             
      
