@@ -336,7 +336,8 @@ class GTK_Main(object):
                 self.subtitle_box.set_label(string)
 
     def start_generate(self):
-        _, chunk_start = (self.player.query_position(Gst.Format.TIME)/ (10**6) ) + 10 * second
+        _, chunk_start = self.player.query_position(Gst.Format.TIME)
+        chunk_start = chunk_start / (10**6)# + 10 * second
         chunk_end = chunk_start + chunk_size
         #chunk_start = 0
         while(chunk_end < self.len_file):
@@ -368,23 +369,6 @@ class GTK_Main(object):
         root_menu.set_submenu(menu)
         return root_menu
 
-
-
-    # def start_stop(self, w):
-    #     if self.button.get_label() == "Start":
-    #         filepath = self.entry.get_text().strip()
-    #         if os.path.isfile(filepath):
-    #             filepath = os.path.realpath(filepath)
-    #             self.button.set_label("Stop")
-    #             self.player.set_property("uri", "file://" + filepath)
-    #             self.player.set_state(Gst.State.PLAYING)
-    #             self.play_thread_id = thread.start_new_thread(self.play_thread, ())
-    #         else:
-    #         	self.play_thread_id = None
-    #             self.player.set_state(Gst.State.NULL)
-    #             self.button.set_label("Start")
-    #             self.time_label.set_text("00:00 / 00:00")
-                
                 
     def on_message(self, bus, message):
         # print "in on_message"
