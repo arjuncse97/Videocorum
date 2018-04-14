@@ -69,6 +69,7 @@ class GTK_Main(object):
         # hbox_slider.add(self.box)
         #creating a slider and calculating its range      
         self.slider = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1000, 1)
+        self.slider.set_draw_value(False)
         self.slider_handler_id = self.slider.connect("value-changed", self.on_slider_seek)
         # self.box.pack_start(self.slider, True, True, 0)
         hbox_slider = Gtk.HBox()
