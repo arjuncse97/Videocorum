@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys, os, thread, time
 import gi
 gi.require_version('Gtk', '3.0')
@@ -131,8 +133,11 @@ class GTK_Main(object):
         window.show_all()
         
         self.player = Gst.ElementFactory.make("playbin", "player")
-        print(type(self.player))
-        print(self.player)
+        if len(sys.argv) == 2:
+            self.player.set_state(Gst.State.NULL)
+            self.player.set_property("uri", "file:///"+sys.argv[1])
+            self.filename = sys.argv[1]
+            self.player.set_state(Gst.State.PLAYING)
         bus = self.player.get_bus()
         bus.add_signal_watch()
         bus.enable_sync_message_emission()
