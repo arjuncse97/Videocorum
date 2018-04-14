@@ -146,6 +146,9 @@ class GTK_Main(object):
         Gtk.main_quit(args[1])
     
     def change_volume(self, widget, *args):
+        #control = Gst.Controller(self.player, "volume")
+        #control.set_interpolation_mode("volume", Gst.INTERPOLATE_LINEAR)
+        #control.set(vo
         print(self.player.set_state(Gst.State.READY))
         self.player.set_property('volume', self.volume_button.get_value())
         print(self.player.set_state(Gst.State.PLAYING))
@@ -220,8 +223,9 @@ class GTK_Main(object):
         dialog.set_default_response(Gtk.ResponseType.OK)
 
         fil = Gtk.FileFilter()
-        fil.set_name("mp4")
+        fil.set_name("Videos")
         fil.add_pattern("*.mp4")
+        fil.add_pattern("*.mkv")
         dialog.add_filter(fil)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
@@ -305,7 +309,7 @@ class GTK_Main(object):
     def auto_generate(self, widget, name):
         shutil.rmtree('./splitAudio')
         os.mkdir('./splitAudio')
-        self.sound_file = AudioSegment.from_file(self.filename[8:], "mp4")
+        self.sound_file = AudioSegment.from_file(self.filename[8:])
         self.len_file = len(self.sound_file)
         print("Length of track: " ,self.len_file/second, "seconds")
         self.sub_write_file = pysrt.SubRipFile(encoding='utf-8')
