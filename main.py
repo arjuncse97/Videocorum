@@ -105,6 +105,16 @@ class GTK_Main(object):
         self.forward_toolbutton.connect("clicked", self.forward_callback)
         toolbar.add(self.forward_toolbutton)
 
+        self.fast_button = Gtk.ToolButton()
+        self.fast_button.set_label("fast")
+        self.fast_button.connect("clicked", self.fast_callback)
+        toolbar.add(self.fast_button)
+
+        self.slow_button = Gtk.ToolButton()
+        self.slow_button.set_label("slow")
+        self.slow_button.connect("clicked", self.slow_callback)
+        toolbar.add(self.slow_button)
+
         # separatortoolitem = Gtk.SeparatorToolItem()
         # toolbar.add(separatortoolitem)
 
@@ -451,6 +461,8 @@ class GTK_Main(object):
             self.slider.set_value(float(0) / Gst.SECOND)
 
             self.slider.handler_unblock(self.slider_handler_id)
+            self.play_toolbutton.set_label("gtk-media-play")
+            self.play_toolbutton.set_icon_name("gtk-media-play")
             # self.button.set_label("Start")
 
             self.time_label.set_text("00:00 / 00:00")
