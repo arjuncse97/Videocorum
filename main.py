@@ -33,6 +33,8 @@ class GTK_Main(object):
     #PLAY_IMAGE = gtk.image_new_from_stock(gtk.STOCK_MEDIA_PLAY, gtk.ICON_SIZE_BUTTON)
     #PAUSE_IMAGE = gtk.image_new_from_stock(gtk.STOCK_MEDIA_PAUSE, gtk.ICON_SIZE_BUTTON)
       
+    #Main Window:
+    
     def __init__(self):
         window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         window.set_title("Videocorum")
@@ -42,6 +44,8 @@ class GTK_Main(object):
 
         vbox = Gtk.VBox(False, 0)
         window.add(vbox)
+        
+        #Menu Bar:
         
         menu_bar = Gtk.MenuBar()
         hbox = Gtk.HBox()
@@ -85,6 +89,8 @@ class GTK_Main(object):
         self.time_label.set_text("00:00 / 00:00")
         hbox.add(self.time_label)
         # hbox.add(self.slider)
+        
+        #TASK BAR: PLAY, PAUSE, STOP, FORWARD, REWIND, VOLUME:
 
         self.play_toolbutton = Gtk.ToolButton()
         self.play_toolbutton.set_label("gtk-media-pause")
@@ -93,7 +99,7 @@ class GTK_Main(object):
         toolbar.add(self.play_toolbutton)
 
         self.rewind_toolbutton = Gtk.ToolButton()
-        self.rewind_toolbutton.set_icon_name("gtk-media-rewind")
+        self.rewind_toolbutton.set_icon_name("gtk-media-forward")
         self.rewind_toolbutton.connect("clicked", self.rewind_callback)        
         toolbar.add(self.rewind_toolbutton)
 
@@ -104,7 +110,7 @@ class GTK_Main(object):
         toolbar.add(self.stop_toolbutton)
 
         self.forward_toolbutton = Gtk.ToolButton()
-        self.forward_toolbutton.set_icon_name("gtk-media-forward")
+        self.forward_toolbutton.set_icon_name("gtk-media-rewind")
         self.forward_toolbutton.connect("clicked", self.forward_callback)
         toolbar.add(self.forward_toolbutton)
 
@@ -243,6 +249,7 @@ class GTK_Main(object):
 
          return True # continue calling every x milliseconds
 
+    #MP4 File Selector:
     def open_file(self, widget, string):
         dialog = Gtk.FileChooserDialog("Open", None,
                 Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
@@ -265,6 +272,7 @@ class GTK_Main(object):
             GLib.timeout_add(1000, self.update_slider, widget)
         dialog.destroy()
         
+    #Subtitle .srt file selector and displaying subtitles:
     def open_subtitles(self, widget, string):
         dialog = Gtk.FileChooserDialog("Open", None,
                 Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
@@ -333,6 +341,7 @@ class GTK_Main(object):
         root_menu.set_submenu(menu)
         return root_menu
 
+    #Automatic Subtitle Generation:
     def auto_generate(self, widget, name):
         shutil.rmtree('./splitAudio')
         os.mkdir('./splitAudio')
@@ -497,6 +506,7 @@ class GTK_Main(object):
                 imagesink.set_window_handle(video_window.get_xid())
             #imagesink.set_window_handle(self.movie_window.get_property('window').get_xid())
 
+#Actual Subtitle Generation: 1. Audio Segmentation  2. Speech Recognition   3. Subtitle Generation:
 def do_subtitles_generation(sub_write_file, filename, chunk_sound_file, start_chunk):    
     voices = detect_nonsilent(chunk_sound_file, 
         # must be silent for at least half a second
