@@ -126,18 +126,6 @@ class GTK_Main(object):
 
         # separatortoolitem = Gtk.SeparatorToolItem()
         # toolbar.add(separatortoolitem)
-
-        self.volume_button = Gtk.VolumeButton()
-        self.volume_button.connect("value-changed", self.change_volume)
-        self.volume_button.set_value(1)
-        hbox.add(self.volume_button)
-        vbox.pack_start(hbox, False, False, 0)
-
-        self.pbRate = 1
-        self.gen = None
-        
-        window.show_all()
-
         sink = "autoaudiosink"
         bin = Gst.Bin()
         self.speedchanger = Gst.ElementFactory.make("pitch")
@@ -177,6 +165,18 @@ class GTK_Main(object):
         bus.enable_sync_message_emission()
         bus.connect("message", self.on_message)
         bus.connect("sync-message::element", self.on_sync_message)
+
+
+        self.volume_button = Gtk.VolumeButton()
+        self.volume_button.connect("value-changed", self.change_volume)
+        self.volume_button.set_value(1)
+        hbox.add(self.volume_button)
+        vbox.pack_start(hbox, False, False, 0)
+
+        self.pbRate = 1
+        self.gen = None
+        
+        window.show_all()
 
     def main_quit(self, *args):
         if self.gen:
