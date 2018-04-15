@@ -30,9 +30,6 @@ counter = 0
 
 class GTK_Main(object):
 
-    #PLAY_IMAGE = gtk.image_new_from_stock(gtk.STOCK_MEDIA_PLAY, gtk.ICON_SIZE_BUTTON)
-    #PAUSE_IMAGE = gtk.image_new_from_stock(gtk.STOCK_MEDIA_PAUSE, gtk.ICON_SIZE_BUTTON)
-      
     #Main Window:
     
     def __init__(self):
@@ -71,8 +68,6 @@ class GTK_Main(object):
 
         # SEEK BAR
         
-        # self.box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL)
-        # hbox_slider.add(self.box)
         #creating a slider and calculating its range      
         self.slider = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1000, 1)
         self.slider.set_draw_value(False)
@@ -87,7 +82,6 @@ class GTK_Main(object):
         hbox.add(toolbar)
         self.time_label = Gtk.Label()
         self.time_label.set_text("00:00 / 00:00")
-        # hbox.add(self.slider)
         
         #TASK BAR: PLAY, PAUSE, STOP, FORWARD, REWIND, VOLUME:
 
@@ -113,18 +107,21 @@ class GTK_Main(object):
         self.forward_toolbutton.connect("clicked", self.forward_callback)
         toolbar.add(self.forward_toolbutton)
 
-        self.fast_button = Gtk.ToolButton()
-        self.fast_button.set_label("fast")
+        self.playback = Gtk.Label()
+        self.playback.set_text("Playback Speed (1x):")
+        hbox.pack_start(self.playback, False, False, 4)
+
+        self.fast_button = Gtk.Button()
+        self.fast_button.set_label("+")
         self.fast_button.connect("clicked", self.fast_callback)
-        toolbar.add(self.fast_button)
+        hbox.pack_start(self.fast_button, False, False, 4)
 
-        self.slow_button = Gtk.ToolButton()
-        self.slow_button.set_label("slow")
+        self.slow_button = Gtk.Button()
+        self.slow_button.set_label("-")
         self.slow_button.connect("clicked", self.slow_callback)
-        toolbar.add(self.slow_button)
+        hbox.pack_start(self.slow_button, False, False, 4)
 
-        # separatortoolitem = Gtk.SeparatorToolItem()
-        # toolbar.add(separatortoolitem)
+
         sink = "autoaudiosink"
         bin = Gst.Bin()
         self.speedchanger = Gst.ElementFactory.make("pitch")
@@ -134,7 +131,6 @@ class GTK_Main(object):
                     "README if you need more information.")
         bin.add(self.speedchanger)
         self.audiosink = Gst.parse_launch(sink)
-        #self.audiosink = Gst.ElementFactory.make(sink, "sink")
 
         bin.add(self.audiosink)
         convert = Gst.ElementFactory.make("audioconvert")
@@ -149,7 +145,7 @@ class GTK_Main(object):
         if len(sys.argv) == 2:
             self.player.set_state(Gst.State.NULL)
             self.player.set_property("uri", "file:///"+sys.argv[1])
-            self.filename = sys.argv[1]
+            self.filename = "file:///" + sys.argv[1]
             self.player.set_property("audio-sink", bin)
             self.speedchanger.set_property("pitch", 0)
             self.player.set_state(Gst.State.PLAYING)
@@ -170,7 +166,7 @@ class GTK_Main(object):
         self.volume_button.connect("value-changed", self.change_volume)
         self.volume_button.set_value(1)
         hbox.pack_end(self.volume_button, False, False, 10)
-        hbox.pack_end(self.time_label, False, False, 0)
+        hbox.pack_end(self.time_label, False, False, 4)
         vbox.pack_start(hbox, False, False, 0)
 
         hbox = Gtk.HBox()
@@ -204,7 +200,6 @@ class GTK_Main(object):
         self.player.set_state(Gst.State.NULL)
         self.player.set_state(Gst.State.PLAYING)
         self.player.set_state(Gst.State.PAUSED)
-        # button_start.set_label(Gtk.STOCK_MEDIA_PLAY)
         self.play_toolbutton.set_label(Gtk.STOCK_MEDIA_PLAY)
         self.play_toolbutton.set_icon_name(Gtk.STOCK_MEDIA_PLAY)
         self.slider.set_value(0)
@@ -253,9 +248,7 @@ class GTK_Main(object):
             success, position = self.player.query_position(Gst.Format.TIME)
             self.current_time = self.convert_ns(position)
             display_time = self.current_time + " / " + self.total_time 
-            # print(display_time)
             self.time_label.set_text(display_time)            
-            # print(position)
             if not success:
                 print "Couldn't fetch current song position to update slider"
 
@@ -305,14 +298,10 @@ class GTK_Main(object):
         dialog.add_filter(fil)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            #name = "file:///" + dialog.get_filename()
             name = dialog.get_filename()
             self.subtitle_name = name
             dialog.destroy()
             thread.start_new_thread(self.start_subtitles, ())
-            #import time
-            #time.sleep(4)
-            #self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 10**10+duration)
 
     def start_subtitles(self):
         subs = pysrt.open(self.subtitle_name)
@@ -320,7 +309,6 @@ class GTK_Main(object):
         string = ''
         while True:
             _, time_ns = self.player.query_position(Gst.Format.TIME)
-            #self.subtitle_box.set_label(str(subs.at(time_ns/(10**9))[0].text))
             try:
                 string = str(subs.at(seconds = int(round(time_ns/(10**9))))[0].text)
             except:
@@ -371,13 +359,9 @@ class GTK_Main(object):
         self.sub_write_file = pysrt.SubRipFile(encoding='utf-8')
         self.sub_write_file.save(self.filename[8:-4] + ".srt", encoding='utf-8')                    
         
-        #self.sub_write_file = multiprocessing.RawValue(pysrt.SubRipFile, self.sub_write_file)
         self.gen = multiprocessing.Process(target = self.start_generate, args=())
-        #show = multiprocessing.Process(target = self.show_generated, args=())
         self.gen.start()
-        #show.start()
         self.auto_generate_subtitles = thread.start_new_thread(self.show_generated, ())
-        #self.auto_generate_subtitles = thread.start_new_thread(self.start_generate, ())
         return
 
     def show_generated(self):
@@ -385,7 +369,6 @@ class GTK_Main(object):
         string = ''
         while True:
             _, time_ns = self.player.query_position(Gst.Format.TIME)
-            #self.subtitle_box.set_label(str(subs.at(time_ns/(10**9))[0].text))
             try:
                 subs = pysrt.open(self.filename[8:-4]+".srt")
                 string = str(subs.at(seconds = int(round(time_ns/(10**9))))[0].text)
@@ -397,9 +380,8 @@ class GTK_Main(object):
 
     def start_generate(self):
         _, chunk_start = self.player.query_position(Gst.Format.TIME)
-        chunk_start = chunk_start / (10**6)# + 10 * second
+        chunk_start = chunk_start / (10**6)
         chunk_end = chunk_start + chunk_size
-        #chunk_start = 0
         while(chunk_end < self.len_file):
             chunk_file = self.sound_file[chunk_start:chunk_end]    
             chunk_start += do_subtitles_generation(self.sub_write_file, self.filename[8:-4], chunk_file, chunk_start)
@@ -451,8 +433,6 @@ class GTK_Main(object):
             self.play_thread_id = None
             self.player.set_state(Gst.State.NULL)
             err, debug = message.parse_error()
-            #print "Error: %s" % err, debug
-            # self.button.set_label("Start")
             self.time_label.set_text("00:00 / 00:00")
             
      
@@ -488,9 +468,8 @@ class GTK_Main(object):
 
     def fast_callback(self, w):
         self.pbRate += .25
-        print "rate changed to ", self.pbRate
+        self.playback.set_text("Playback Speed ("+str(self.pbRate)+"x):")
         rc, pos_int = self.player.query_position(Gst.Format.TIME)
-        print rc, pos_int
         event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
              Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
              Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
@@ -498,9 +477,8 @@ class GTK_Main(object):
     
     def slow_callback(self, w):
         self.pbRate -= .25
-        print "rate changed to ", self.pbRate
+        self.playback.set_text("Playback Speed ("+str(self.pbRate)+"x):")
         rc, pos_int = self.player.query_position(Gst.Format.TIME)
-        print rc, pos_int
         event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
              Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
              Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
@@ -571,7 +549,6 @@ def do_subtitles_generation(sub_write_file, filename, chunk_sound_file, start_ch
         with sr.AudioFile(out_file) as source:
             audio = r.record(source)
             text = r.recognize_sphinx(audio)
-            #self.sub_write_file = pysrt.open(self.filename[8:-4]+".srt", encoding='utf-8')
             sub = pysrt.SubRipItem()
             sub.index = counter
             counter += 1
