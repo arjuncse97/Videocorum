@@ -213,9 +213,14 @@ class GTK_Main(object):
             #starting up a timer to check on the current playback value
             GLib.timeout_add(1000, self.update_slider, widget)
 
-    def on_slider_seek(self, widget):
+    def on_slider_seek(self, widget):       
         seek_time_secs = self.slider.get_value()
+        pos_int = seek_time_secs * 1000000000
         self.player.seek_simple(Gst.Format.TIME,  Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT, seek_time_secs * Gst.SECOND)
+        event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
+             Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
+             Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
+        self.player.send_event(event)
         if self.gen:
             self.gen.terminate()
             self.gen.join()
