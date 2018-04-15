@@ -221,10 +221,11 @@ class GTK_Main(object):
         seek_time_secs = self.slider.get_value()
         pos_int = seek_time_secs * 1000000000
         self.player.seek_simple(Gst.Format.TIME,  Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT, seek_time_secs * Gst.SECOND)
-        event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
-             Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
-             Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
-        self.player.send_event(event)
+        if(self.pbRate != 1):
+            event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
+                Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
+                Gst.SeekType.SET, pos_int, Gst.SeekType.NONE, 0)
+            self.player.send_event(event)
         if self.gen:
             self.gen.terminate()
             self.gen.join()
@@ -459,6 +460,11 @@ class GTK_Main(object):
             seek_ns = 0
         print 'Backward: %d ns -> %d ns' % (pos_int, seek_ns)
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
+        if(self.pbRate != 1):
+            event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
+                Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
+                Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, 0)
+            self.player.send_event(event)
         GLib.timeout_add(1000, self.update_slider, w)
 
     def forward_callback(self, w):
@@ -466,6 +472,11 @@ class GTK_Main(object):
         seek_ns = pos_int + 10 * 1000000000
         print 'Forward: %d ns -> %d ns' % (pos_int, seek_ns)
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
+        if(self.pbRate != 1):
+            event = Gst.Event.new_seek(self.pbRate, Gst.Format.TIME,
+                Gst.SeekFlags.FLUSH|Gst.SeekFlags.ACCURATE,
+                Gst.SeekType.SET, seek_ns, Gst.SeekType.NONE, 0)
+            self.player.send_event(event)
         GLib.timeout_add(1000, self.update_slider, w)        
 
     def fast_callback(self, w):
