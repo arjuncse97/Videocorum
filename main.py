@@ -137,21 +137,8 @@ class GTK_Main(object):
         self.gen = None
         
         window.show_all()
-        
-        self.player = Gst.ElementFactory.make("playbin", "player")
-        if len(sys.argv) == 2:
-            self.player.set_state(Gst.State.NULL)
-            self.player.set_property("uri", "file:///"+sys.argv[1])
-            self.filename = sys.argv[1]
-            self.player.set_state(Gst.State.PLAYING)
-        bus = self.player.get_bus()
-        bus.add_signal_watch()
-        bus.enable_sync_message_emission()
-        bus.connect("message", self.on_message)
-        bus.connect("sync-message::element", self.on_sync_message)
 
         sink = "autoaudiosink"
-
         bin = Gst.Bin()
         self.speedchanger = Gst.ElementFactory.make("pitch")
         if self.speedchanger is None:
@@ -169,8 +156,25 @@ class GTK_Main(object):
         convert.link(self.audiosink)
         sink_pad = Gst.GhostPad.new("sink", self.speedchanger.get_static_pad("sink"))
         bin.add_pad(sink_pad)
-        self.player.set_property("audio-sink", bin)
-        self.speedchanger.set_property("pitch", 0)
+
+
+        self.player = Gst.ElementFactory.make("playbin", "player")
+        if len(sys.argv) == 2:
+            self.player.set_state(Gst.State.NULL)
+            self.player.set_property("uri", "file:///"+sys.argv[1])
+            self.filename = sys.argv[1]
+            self.player.set_property("audio-sink", bin)
+            self.speedchanger.set_property("pitch", 0)
+            self.player.set_state(Gst.State.PLAYING)
+        else:
+            self.player.set_property("audio-sink", bin)
+            self.speedchanger.set_property("pitch", 0)
+        
+        bus = self.player.get_bus()
+        bus.add_signal_watch()
+        bus.enable_sync_message_emission()
+        bus.connect("message", self.on_message)
+        bus.connect("sync-message::element", self.on_sync_message)
 
     def main_quit(self, *args):
         if self.gen:
@@ -182,9 +186,10 @@ class GTK_Main(object):
         #control = Gst.Controller(self.player, "volume")
         #control.set_interpolation_mode("volume", Gst.INTERPOLATE_LINEAR)
         #control.set(vo
-        print(self.player.set_state(Gst.State.READY))
-        self.player.set_property('volume', self.volume_button.get_value())
-        print(self.player.set_state(Gst.State.PLAYING))
+        if self.player:
+            self.player.set_state(Gst.State.READY)
+            self.player.set_property('volume', self.volume_button.get_value())
+            self.player.set_state(Gst.State.PLAYING)
         return
 
     def action_stop(self, widget):
