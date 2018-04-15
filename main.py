@@ -144,6 +144,28 @@ class GTK_Main(object):
         bus.connect("message", self.on_message)
         bus.connect("sync-message::element", self.on_sync_message)
 
+        sink = "autoaudiosink"
+
+        bin = Gst.Bin()
+        self.speedchanger = Gst.ElementFactory.make("pitch")
+        if self.speedchanger is None:
+            raise GenericException("You need to install the Gstreamer soundtouch elements for "
+                    "play it slowly to. They are part of Gstreamer-plugins-bad. Consult the "
+                    "README if you need more information.")
+        bin.add(self.speedchanger)
+        self.audiosink = Gst.parse_launch(sink)
+        #self.audiosink = Gst.ElementFactory.make(sink, "sink")
+
+        bin.add(self.audiosink)
+        convert = Gst.ElementFactory.make("audioconvert")
+        bin.add(convert)
+        self.speedchanger.link(convert)
+        convert.link(self.audiosink)
+        sink_pad = Gst.GhostPad.new("sink", self.speedchanger.get_static_pad("sink"))
+        bin.add_pad(sink_pad)
+        self.player.set_property("audio-sink", bin)
+        self.speedchanger.set_property("pitch", 0)
+
     def main_quit(self, *args):
         if self.gen:
             self.gen.terminate()
