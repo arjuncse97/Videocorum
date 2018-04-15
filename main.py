@@ -17,7 +17,7 @@ import speech_recognition as sr
 import shutil
 from pydub import AudioSegment
 from pydub.silence import split_on_silence, detect_silence, detect_nonsilent
-import multiprocessing
+import multiprocessing, subprocess
 
 r = sr.Recognizer()
 
@@ -185,13 +185,9 @@ class GTK_Main(object):
         Gtk.main_quit(args[1])
     
     def change_volume(self, widget, *args):
-        #control = Gst.Controller(self.player, "volume")
-        #control.set_interpolation_mode("volume", Gst.INTERPOLATE_LINEAR)
-        #control.set(vo
         if self.player:
-            self.player.set_state(Gst.State.READY)
-            self.player.set_property('volume', self.volume_button.get_value())
-            self.player.set_state(Gst.State.PLAYING)
+            volume = self.volume_button.get_value() * 100
+            subprocess.call(["amixer", "-D", "pulse", "sset", "Master", str(volume)+"%"])
         return
 
     def action_stop(self, widget):
