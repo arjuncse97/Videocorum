@@ -93,7 +93,7 @@ class GTK_Main(object):
         toolbar.add(self.play_toolbutton)
 
         self.rewind_toolbutton = Gtk.ToolButton()
-        self.rewind_toolbutton.set_icon_name("gtk-media-rewind")
+        self.rewind_toolbutton.set_icon_name("gtk-media-forward")
         self.rewind_toolbutton.connect("clicked", self.rewind_callback)        
         toolbar.add(self.rewind_toolbutton)
 
@@ -104,7 +104,7 @@ class GTK_Main(object):
         toolbar.add(self.stop_toolbutton)
 
         self.forward_toolbutton = Gtk.ToolButton()
-        self.forward_toolbutton.set_icon_name("gtk-media-forward")
+        self.forward_toolbutton.set_icon_name("gtk-media-rewind")
         self.forward_toolbutton.connect("clicked", self.forward_callback)
         toolbar.add(self.forward_toolbutton)
 
