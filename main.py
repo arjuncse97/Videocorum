@@ -87,7 +87,6 @@ class GTK_Main(object):
         hbox.add(toolbar)
         self.time_label = Gtk.Label()
         self.time_label.set_text("00:00 / 00:00")
-        hbox.add(self.time_label)
         # hbox.add(self.slider)
         
         #TASK BAR: PLAY, PAUSE, STOP, FORWARD, REWIND, VOLUME:
@@ -170,8 +169,19 @@ class GTK_Main(object):
         self.volume_button = Gtk.VolumeButton()
         self.volume_button.connect("value-changed", self.change_volume)
         self.volume_button.set_value(1)
-        hbox.add(self.volume_button)
+        hbox.pack_end(self.volume_button, False, False, 10)
+        hbox.pack_end(self.time_label, False, False, 0)
         vbox.pack_start(hbox, False, False, 0)
+
+        hbox = Gtk.HBox()
+        self.filename_display = Gtk.Label()
+        hbox.pack_start(self.filename_display, False, False, 0)
+        vbox.pack_start(hbox, False, False, 0)
+        try:
+            self.filename_display.set_text(self.filename.split('/')[-1])
+        except:
+            pass
+
 
         self.pbRate = 1
         self.gen = None
@@ -277,6 +287,7 @@ class GTK_Main(object):
             self.player.set_property("uri", (name))
             self.filename = name
             self.player.set_state(Gst.State.PLAYING)
+            self.filename_display.set_text(self.filename.split('/')[-1])
             GLib.timeout_add(1000, self.update_slider, widget)
         dialog.destroy()
         
