@@ -130,7 +130,7 @@ class GTK_Main(object):
         bin = Gst.Bin()
         self.speedchanger = Gst.ElementFactory.make("pitch")
         if self.speedchanger is None:
-            raise GenericException("You need to install the Gstreamer soundtouch elements for "
+            print ("You need to install the Gstreamer soundtouch elements for "
                     "play it slowly to. They are part of Gstreamer-plugins-bad. Consult the "
                     "README if you need more information.")
         bin.add(self.speedchanger)
@@ -236,7 +236,7 @@ class GTK_Main(object):
             success, self.duration = self.player.query_duration(Gst.Format.TIME)
             self.total_time = self.convert_ns(self.duration)
             if not success:
-                raise GenericException("Couldn't fetch song duration")
+                print "Couldn't fetch song duration"
             else:
                 self.slider.set_range(0, self.duration / Gst.SECOND)
             #fetching the position, in nanosecs
@@ -247,7 +247,7 @@ class GTK_Main(object):
             self.time_label.set_text(display_time)            
             # print(position)
             if not success:
-                raise GenericException("Couldn't fetch current song position to update slider")
+                print "Couldn't fetch current song position to update slider"
 
             # block seek handler so we don't seek when we set_value()
             self.slider.handler_block(self.slider_handler_id)
